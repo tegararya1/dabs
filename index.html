@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoring Sensor Pangan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">Jurnal Monitoring Sensor Pangan</h1>
+      <p class="text-gray-600">SLB DARMAYANTI</p>
+    </div>
+    <div class="flex justify-end gap-3 mt-4">
+      <a href="#" id="btnLaporan"
+        onclick="goToLaporan()"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow font-bold">
+        📊 Riwayat Data Sensor
+      </a>
+      <a href="pangan.html"
+        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow font-bold">
+        🐐 Cek Pangan Kambing
+      </a>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8 max-w-5xl">
+
+    <!-- Status LCD -->
+    <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-4 text-center">Informasi Status Sensor LED</h2>
+      <div class="flex justify-center space-x-32">
+        <div class="flex flex-col items-center">
+          <div class="sensor-light sensor-red"></div>
+          <p class="text-red-600 font-bold">MERAH</p>
+          <p class="text-gray-600 text-sm">Belum Siap</p>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="sensor-light sensor-yellow"></div>
+          <p class="text-yellow-600 font-bold">KUNING</p>
+          <p class="text-gray-600 text-sm">Hampir Siap</p>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="sensor-light sensor-green"></div>
+          <p class="text-green-600 font-bold">HIJAU</p>
+          <p class="text-gray-600 text-sm">Sudah Siap</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div id="stepIndicator" class="flex justify-center space-x-2 mb-4"></div>
+
+    <!-- Step Content -->
+    <div id="stepContent"></div>
+  </div>
+
+  <!-- Modal PIN -->
+  <div id="modalPin" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <h2 class="text-lg font-semibold mb-4">Masukkan PIN</h2>
+      <input id="pinInput" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+            class="border rounded px-3 py-2 w-full text-center text-lg tracking-widest" placeholder="••••">
+      <p id="pinError" class="text-red-600 text-sm mt-2 hidden">PIN salah!</p>
+      <div class="mt-4 flex justify-center space-x-3">
+        <button onclick="checkPin()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">OK</button>
+        <button onclick="resetPinModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Profil -->
+  <div id="modalProfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h2 class="text-lg font-semibold mb-4">Kelola Profil Siswa</h2>
+      <div id="profilList" class="space-y-2 mb-4"></div>
+      <div class="flex space-x-2 mb-4">
+        <input id="newProfil" type="text" placeholder="Nama siswa baru" class="border p-2 rounded flex-grow">
+        <button onclick="addProfil()" class="bg-green-600 text-white px-4 rounded">Tambah</button>
+      </div>
+      <button onclick="closeProfilModal()" class="bg-gray-600 text-white px-4 py-2 rounded w-full">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Modal Edit Profil -->
+  <div id="modalEditProfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <h2 class="text-lg font-bold mb-4">Edit Profil</h2>
+      <input type="text" id="editProfilInput" class="border rounded w-full p-2 mb-4">
+      <div class="flex justify-center space-x-4">
+        <button onclick="confirmEditProfil()" class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
+        <button onclick="closeEditModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Hapus Profil -->
+  <div id="modalHapusProfil" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <h2 class="text-lg font-bold mb-4">Hapus Profil</h2>
+      <p id="hapusText" class="mb-4"></p>
+      <div class="flex justify-center space-x-4">
+        <button onclick="confirmHapusProfil()" class="bg-red-600 text-white px-4 py-2 rounded">Hapus</button>
+        <button onclick="closeHapusModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Drum -->
+  <div id="modalDrum" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h2 class="text-lg font-semibold mb-4">Kelola Drum Fermentasi</h2>
+      <div id="drumList" class="space-y-2 mb-4"></div>
+      <div class="flex space-x-2 mb-4">
+        <input id="newDrum" type="text" placeholder="Nama drum baru" class="border p-2 rounded flex-grow">
+        <button onclick="addDrum()" class="bg-green-600 text-white px-4 rounded">Tambah</button>
+      </div>
+      <button onclick="closeDrumModal()" class="bg-gray-600 text-white px-4 py-2 rounded w-full">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Modal Edit Drum -->
+  <div id="modalEditDrum" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <h2 class="text-lg font-bold mb-4">Edit Drum</h2>
+      <input type="text" id="editDrumInput" class="border rounded w-full p-2 mb-4">
+      <div class="flex justify-center space-x-4">
+        <button onclick="confirmEditDrum()" class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
+        <button onclick="closeEditDrum()" class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Hapus Drum -->
+  <div id="modalHapusDrum" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <h2 class="text-lg font-bold mb-4">Hapus Drum</h2>
+      <p id="hapusDrumText" class="mb-4"></p>
+      <div class="flex justify-center space-x-4">
+        <button onclick="confirmHapusDrum()" class="bg-red-600 text-white px-4 py-2 rounded">Hapus</button>
+        <button onclick="closeHapusDrum()" class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detail Drum -->
+  <div id="modalDetailDrum" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl">
+      <h2 id="detailTitleDrum" class="text-lg font-semibold mb-4">Detail Drum</h2>
+      <div class="overflow-x-auto mb-4">
+        <table class="w-full border text-center">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="border p-2">No</th>
+              <th class="border p-2">Waktu</th>
+              <th class="border p-2">Nama</th>
+              <th class="border p-2">Drum</th>
+              <th class="border p-2">Suhu</th>
+              <th class="border p-2">Kelembapan</th>
+              <th class="border p-2">Gas</th>
+              <th class="border p-2">pH</th>
+              <th class="border p-2">Status</th>
+              <th class="border p-2">Aksi</th> 
+            </tr>
+          </thead>
+          <tbody id="detailDrumBody">
+            <tr><td colspan="9" class="p-4 text-gray-500">Belum ada data</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button onclick="closeDetailDrum()" class="bg-gray-600 text-white px-4 py-2 rounded w-full">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Modal Warning -->
+  <div id="modalWarning" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
+      <div class="text-red-600 text-4xl mb-2">⚠️</div>
+      <p class="font-semibold mb-2">Isi Suhu, Kelembapan, Gas, dan pH atau Pilih Lewati</p>
+      <button onclick="closeWarningModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg">OK</button>
+    </div>
+  </div>
+
+<!-- Modal Success -->
+<div id="modalSuccess" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+    <div class="text-green-600 text-4xl mb-2">✅</div>
+    <h2 class="text-lg font-semibold mb-2">Sukses!</h2>
+    <button onclick="closeSuccessModal()" 
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">
+      OK
+    </button>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Laporan -->
+<div id="modalKonfirmasiLaporan" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl text-center">
+    <h2 class="text-lg font-bold mb-4">Konfirmasi Laporan</h2>
+    <div class="overflow-x-auto mb-4">
+      <table class="w-full border text-center">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border p-2">No</th>
+            <th class="border p-2">Waktu</th>
+            <th class="border p-2">Nama</th>
+            <th class="border p-2">Drum</th>
+            <th class="border p-2">Suhu</th>
+            <th class="border p-2">Kelembapan</th>
+            <th class="border p-2">Gas</th>
+            <th class="border p-2">pH</th>
+            <th class="border p-2">Status</th>
+          </tr>
+        </thead>
+        <tbody id="konfirmasiLaporanBody">
+          <!-- Data laporan sementara ditampilkan di sini -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tombol aksi -->
+    <div class="flex justify-between mt-6">
+      <!-- Batal di kiri -->
+      <button onclick="closeModal('modalKonfirmasiLaporan')" 
+              class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg w-32">
+        ❌ Batal
+      </button>
+
+      <!-- Simpan di kanan -->
+      <button onclick="simpanLaporanFinal()" 
+              class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-lg w-40 flex items-center justify-center">
+        ✅ Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+  <!-- Modal Hapus Laporan -->
+  <div id="modalHapusLaporan" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <h2 class="text-lg font-semibold mb-4">Masukkan PIN untuk Hapus Data</h2>
+      <input type="password" id="hapusLaporanPin" maxlength="4"
+            class="border rounded px-3 py-2 w-full text-center text-lg tracking-widest mb-2"
+            placeholder="••••">
+      <p id="hapusLaporanError" class="text-red-600 text-sm hidden mb-2">PIN salah!</p>
+      <div class="flex justify-between">
+        <!-- tombol hapus dinamis -->
+        <button id="btnConfirmHapusLaporan" class="bg-red-600 text-white px-4 py-2 rounded">Hapus</button>
+        <button onclick="resetHapusLaporanModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
